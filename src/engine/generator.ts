@@ -9,6 +9,7 @@ import {
   Grid,
   spiral,
 } from "honeycomb-grid";
+import { RNG } from "./rng";
 
 /**
  * Definimos el tipo de hex
@@ -17,8 +18,15 @@ const Hex = defineHex({ dimensions: 1 });
 
 type GameHex = InstanceType<typeof Hex>;
 
-function shuffle<T>(array: T[]): T[] {
-  return [...array].sort(() => Math.random() - 0.5);
+function shuffle<T>(array: T[], rng: RNG): T[] {
+  const copy = [...array];
+
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(rng.next() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
 }
 
 /**
@@ -64,16 +72,16 @@ function hasInvalidSixEightAdjacency(
   return false;
 }
 
-export function generateBoard(): Board {
+export function generateBoard(rng: RNG): Board {
   const grid = createHexagonGrid();
 
-  const resources = shuffle(RESOURCE_DISTRIBUTION);
+  const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
 
   let tiles: Tile[] = [];
   let valid = false;
 
   while (!valid) {
-    const numbers = shuffle(NUMBER_DISTRIBUTION);
+    const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
     let numberIndex = 0;
 
     tiles = grid.toArray().map((hex, i) => {
