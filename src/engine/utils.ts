@@ -1,6 +1,8 @@
-import { Grid, Hex } from "honeycomb-grid";
+import { defineHex, Grid } from "honeycomb-grid";
 import { Tile } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const Hex = defineHex({ dimensions: 1 });
 type GameHex = InstanceType<typeof Hex>;
 
 /**
