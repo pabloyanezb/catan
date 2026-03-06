@@ -6,6 +6,7 @@ import {
   RESOURCE_DISTRIBUTION,
   NUMBER_DISTRIBUTION,
 } from "./constants";
+import { DEFAULT_SETTINGS } from "./settings";
 
 import {
   defineHex,
@@ -42,7 +43,7 @@ function createHexagonGrid(): Grid<GameHex> {
 
 export function generateBoard(
   rng: RNG,
-  settings: BoardSettings
+  settings: BoardSettings = DEFAULT_SETTINGS
 ): Board {
 
   const grid = createHexagonGrid();
