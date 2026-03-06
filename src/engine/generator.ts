@@ -1,19 +1,11 @@
 import { Board, BoardSettings, Tile } from "./types";
-import { validateAdjacency, validateResourceBalance } from "./validators";
+import { validateAdjacency, validateNodeScore, validateResourceBalance } from "./validators";
 import { RNG } from "./rng";
 import { computeNeighbors } from "./utils";
-import {
-  RESOURCE_DISTRIBUTION,
-  NUMBER_DISTRIBUTION,
-} from "./constants";
+import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "./constants";
 import { DEFAULT_SETTINGS } from "./settings";
 
-import {
-  defineHex,
-  Grid,
-  spiral,
-} from "honeycomb-grid";
-
+import { defineHex, Grid, spiral,} from "honeycomb-grid";
 
 /**
  * Definimos el tipo de hex
@@ -79,10 +71,8 @@ export function generateBoard(
 
     valid =
       validateAdjacency(tiles, settings.adjacencyRule) &&
-      (
-        settings.resourceBalance === "random" ||
-        validateResourceBalance(tiles)
-      );
+      (settings.adjacencyRule === 'relaxed' || validateNodeScore(tiles)) &&
+      (settings.resourceBalance === 'random' || validateResourceBalance(tiles));
   }
 
   return { tiles };

@@ -20,8 +20,8 @@ export interface Board {
 }
 
 export type AdjacencyRule =
-  | 'relaxed'
-  | 'strict';
+  | 'strict'
+  | 'relaxed';
 
 export type ResourceBalanceMode =
   | 'random'
