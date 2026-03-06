@@ -14,21 +14,23 @@ const resourceColors: Record<string, string> = {
   desert: "#E4CEA3",
 };
 
+const probabilityByNumber: Record<number, number> = {
+  2: 1,
+  3: 2,
+  4: 3,
+  5: 4,
+  6: 5,
+  8: 5,
+  9: 4,
+  10: 3,
+  11: 2,
+  12: 1,
+};
+
 export default function HexTile({ tile }: Props) {
   const center = axialToPixel(tile.q, tile.r);
   const corners = getHexCorners(center);
-  const probabilityByNumber: Record<number, number> = {
-    2: 1,
-    3: 2,
-    4: 3,
-    5: 4,
-    6: 5,
-    8: 5,
-    9: 4,
-    10: 3,
-    11: 2,
-    12: 1,
-  };
+
   const numberProbability = tile.number ? probabilityByNumber[tile.number] : 0;
   const numberFontSize = 18 + numberProbability * 2;
   const numberColor = numberProbability >= 5 ? "#9F1D1D" : "#1F2937";
