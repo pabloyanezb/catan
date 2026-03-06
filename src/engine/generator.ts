@@ -1,4 +1,7 @@
-import { Board, Tile } from "./types";
+import { Board, BoardSettings, Tile } from "./types";
+import { validateAdjacency, validateResourceBalance } from "./validators";
+import { RNG } from "./rng";
+import { computeNeighbors } from "./utils";
 import {
   RESOURCE_DISTRIBUTION,
   NUMBER_DISTRIBUTION,
@@ -9,7 +12,7 @@ import {
   Grid,
   spiral,
 } from "honeycomb-grid";
-import { RNG } from "./rng";
+
 
 /**
  * Definimos el tipo de hex
@@ -37,42 +40,11 @@ function createHexagonGrid(): Grid<GameHex> {
   return new Grid(Hex, hexes);
 }
 
-function hasInvalidSixEightAdjacency(
-  tiles: Tile[],
-  grid: Grid<GameHex>
-): boolean {
-  const tileMap = new Map<string, Tile>(
-    tiles.map((t) => [`${t.q},${t.r}`, t])
-  );
+export function generateBoard(
+  rng: RNG,
+  settings: BoardSettings
+): Board {
 
-  const directions = [0, 1, 2, 3, 4, 5] as const;
-
-  for (const tile of tiles) {
-    if (tile.number !== 6 && tile.number !== 8) continue;
-
-    const hex = grid.getHex({ q: tile.q, r: tile.r });
-    if (!hex) continue;
-
-    for (const dir of directions) {
-      const neighbor = grid.neighborOf(hex, dir);
-      if (!neighbor) continue;
-
-      const neighborTile = tileMap.get(
-        `${neighbor.q},${neighbor.r}`
-      );
-
-      if (!neighborTile) continue;
-
-      if (neighborTile.number === 6 || neighborTile.number === 8) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-export function generateBoard(rng: RNG): Board {
   const grid = createHexagonGrid();
 
   const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
@@ -100,43 +72,18 @@ export function generateBoard(rng: RNG): Board {
         number,
         neighbors: [],
       };
+
     });
 
     computeNeighbors(tiles, grid);
 
-    valid = !hasInvalidSixEightAdjacency(tiles, grid);
+    valid =
+      validateAdjacency(tiles, settings.adjacencyRule) &&
+      (
+        settings.resourceBalance === "balanced" ||
+        validateResourceBalance(tiles)
+      );
   }
 
   return { tiles };
-}
-
-function computeNeighbors(
-  tiles: Tile[],
-  grid: Grid<GameHex>
-) {
-  const tileMap = new Map<string, Tile>(
-    tiles.map((t) => [`${t.q},${t.r}`, t])
-  );
-
-  const directions = [0, 1, 2, 3, 4, 5] as const;
-
-  for (const tile of tiles) {
-    tile.neighbors = [];
-
-    const hex = grid.getHex({ q: tile.q, r: tile.r });
-    if (!hex) continue;
-
-    for (const dir of directions) {
-      const neighbor = grid.neighborOf(hex, dir);
-      if (!neighbor) continue;
-
-      const neighborTile = tileMap.get(
-        `${neighbor.q},${neighbor.r}`
-      );
-
-      if (neighborTile) {
-        tile.neighbors.push(neighborTile.id);
-      }
-    }
-  }
 }

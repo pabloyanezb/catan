@@ -19,9 +19,13 @@ export interface Board {
   tiles: Tile[];
 }
 
-export type AdjacencyRule = 'standard' | 'extended';
+export type AdjacencyRule =
+  | 'standard'
+  | 'extended';
 
-export type ResourceBalanceMode = 'random' | 'balanced';
+export type ResourceBalanceMode =
+  | 'random'
+  | 'balanced';
 
 export interface BoardSettings {
   adjacencyRule: AdjacencyRule;

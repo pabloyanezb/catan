@@ -3,24 +3,87 @@
 import { useState } from "react";
 import { generateBoard } from "@/engine/generator";
 import { MathRandomRNG } from "@/engine/rng";
+import { BoardSettings } from "@/engine/types";
 import BoardView from "./BoardView";
 
 export default function BoardClient() {
-  const [board, setBoard] = useState<ReturnType<typeof generateBoard> | null>(null);
+
+const [settings, setSettings] = useState<BoardSettings>({
+  adjacencyRule: "standard",
+  resourceBalance: "balanced",
+});
+
+  const [board, setBoard] =
+    useState<ReturnType<typeof generateBoard> | null>(null);
 
   function handleGenerate() {
     const rng = new MathRandomRNG();
-    const newBoard = generateBoard(rng);
+
+    const newBoard = generateBoard(rng, settings);
+
     setBoard(newBoard);
+  }
+
+  function updateSetting<K extends keyof BoardSettings>(
+    key: K,
+    value: BoardSettings[K]
+  ) {
+    setSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   }
 
   return (
     <div>
-      <button onClick={handleGenerate} style={{ marginBottom: 16 }}>
-        Generate Board
-      </button>
+
+      {/* SETTINGS */}
+
+      <div style={{
+        display: "flex",
+        gap: 16,
+        marginBottom: 16,
+        alignItems: "center"
+      }}>
+
+        {/* ADJACENCY RULE */}
+
+        <label>
+          Number adjacency
+          <select
+            value={settings.adjacencyRule}
+            onChange={(e) =>
+              updateSetting("adjacencyRule", e.target.value as BoardSettings["adjacencyRule"])
+            }
+          >
+            <option value="standard">Standard</option>
+            <option value="extended">Extended</option>
+          </select>
+        </label>
+
+        {/* RESOURCE BALANCE */}
+
+        <label>
+          Resource balance
+          <select
+            value={settings.resourceBalance}
+            onChange={(e) =>
+              updateSetting("resourceBalance", e.target.value as BoardSettings["resourceBalance"])
+            }
+          >
+            <option value="balanced">Balanced</option>
+            <option value="random">Random</option>
+          </select>
+        </label>
+
+        <button onClick={handleGenerate}>
+          Generate Board
+        </button>
+
+      </div>
 
       {board && <BoardView board={board} />}
+
     </div>
   );
 }
