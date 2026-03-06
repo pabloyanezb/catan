@@ -20,21 +20,17 @@ describe("generateBoard", () => {
   it("should not have adjacent 6 and 8 tiles", () => {
     const board = generateBoard(new MathRandomRNG());
 
-    const sixEightTiles = board.tiles.filter(
+    const highValueTiles = board.tiles.filter(
       (t) => t.number === 6 || t.number === 8
     );
 
-    for (const tile of sixEightTiles) {
-      const neighbors = board.tiles.filter(
-        (t) =>
-          Math.abs(t.q - tile.q) <= 1 &&
-          Math.abs(t.r - tile.r) <= 1 &&
-          !(t.q === tile.q && t.r === tile.r)
-      );
+    for (const tile of highValueTiles) {
+      const neighbors = tile.neighbors
+        .map((id) => board.tiles.find((t) => t.id === id))
+        .filter(Boolean);
 
       for (const neighbor of neighbors) {
-        expect(neighbor.number).not.toBe(6);
-        expect(neighbor.number).not.toBe(8);
+        expect(neighbor!.number === 6 || neighbor!.number === 8).toBe(false);
       }
     }
   });

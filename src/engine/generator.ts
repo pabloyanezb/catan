@@ -1,15 +1,11 @@
-import { Board, Tile } from "./types";
-import {
-  RESOURCE_DISTRIBUTION,
-  NUMBER_DISTRIBUTION,
-} from "./constants";
-
-import {
-  defineHex,
-  Grid,
-  spiral,
-} from "honeycomb-grid";
+import { Board, BoardSettings, Tile } from "./types";
+import { validateAdjacency, validateNodeScore, validateResourceBalance } from "./validators";
 import { RNG } from "./rng";
+import { computeNeighbors } from "./utils";
+import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "./constants";
+import { DEFAULT_SETTINGS } from "./settings";
+
+import { defineHex, Grid, spiral,} from "honeycomb-grid";
 
 /**
  * Definimos el tipo de hex
@@ -37,50 +33,18 @@ function createHexagonGrid(): Grid<GameHex> {
   return new Grid(Hex, hexes);
 }
 
-function hasInvalidSixEightAdjacency(
-  tiles: Tile[],
-  grid: Grid<GameHex>
-): boolean {
-  const tileMap = new Map<string, Tile>(
-    tiles.map((t) => [`${t.q},${t.r}`, t])
-  );
+export function generateBoard(
+  rng: RNG,
+  settings: BoardSettings = DEFAULT_SETTINGS
+): Board {
 
-  const directions = [0, 1, 2, 3, 4, 5] as const;
-
-  for (const tile of tiles) {
-    if (tile.number !== 6 && tile.number !== 8) continue;
-
-    const hex = grid.getHex({ q: tile.q, r: tile.r });
-    if (!hex) continue;
-
-    for (const dir of directions) {
-      const neighbor = grid.neighborOf(hex, dir);
-      if (!neighbor) continue;
-
-      const neighborTile = tileMap.get(
-        `${neighbor.q},${neighbor.r}`
-      );
-
-      if (!neighborTile) continue;
-
-      if (neighborTile.number === 6 || neighborTile.number === 8) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-export function generateBoard(rng: RNG): Board {
   const grid = createHexagonGrid();
-
-  const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
 
   let tiles: Tile[] = [];
   let valid = false;
 
   while (!valid) {
+    const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
     const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
     let numberIndex = 0;
 
@@ -98,10 +62,17 @@ export function generateBoard(rng: RNG): Board {
         r: hex.r,
         resource,
         number,
+        neighbors: [],
       };
+
     });
 
-    valid = !hasInvalidSixEightAdjacency(tiles, grid);
+    computeNeighbors(tiles);
+
+    valid =
+      validateAdjacency(tiles, settings.adjacencyRule) &&
+      (settings.adjacencyRule === 'relaxed' || validateNodeScore(tiles)) &&
+      (settings.resourceBalance === 'random' || validateResourceBalance(tiles));
   }
 
   return { tiles };

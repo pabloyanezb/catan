@@ -12,8 +12,22 @@ export interface Tile {
   r: number;
   resource: Resource;
   number?: number;
+  neighbors: string[];
 }
 
 export interface Board {
   tiles: Tile[];
+}
+
+export type AdjacencyRule =
+  | 'strict'
+  | 'relaxed';
+
+export type ResourceBalanceMode =
+  | 'random'
+  | 'balanced';
+
+export interface BoardSettings {
+  adjacencyRule: AdjacencyRule;
+  resourceBalance: ResourceBalanceMode;
 }
