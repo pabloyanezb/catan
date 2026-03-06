@@ -1,6 +1,6 @@
 import { BoardSettings } from './types';
 
 export const DEFAULT_SETTINGS: BoardSettings = {
-  adjacencyRule: 'standard',
+  adjacencyRule: 'strict',
   resourceBalance: 'balanced',
 };

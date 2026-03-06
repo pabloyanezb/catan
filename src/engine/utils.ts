@@ -1,9 +1,4 @@
-import { defineHex, Grid } from "honeycomb-grid";
 import { Tile } from "./types";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const Hex = defineHex({ dimensions: 1 });
-type GameHex = InstanceType<typeof Hex>;
 
 /**
  * Construye un mapa rápido id -> tile
@@ -15,32 +10,26 @@ export function buildTileMap(tiles: Tile[]): Map<string, Tile> {
   );
 }
 
-export function computeNeighbors(
-  tiles: Tile[],
-  grid: Grid<GameHex>
-) {
-  const tileMap = new Map<string, Tile>(
-    tiles.map((t) => [`${t.q},${t.r}`, t])
-  );
+export function computeNeighbors(tiles: Tile[]) {
+  const tileMap = buildTileMap(tiles);
 
-  const directions = [0, 1, 2, 3, 4, 5] as const;
+  // Los 6 vecinos en coordenadas axiales
+  const AXIAL_DIRECTIONS = [
+    { q: 1, r: 0 },
+    { q: 1, r: -1 },
+    { q: 0, r: -1 },
+    { q: -1, r: 0 },
+    { q: -1, r: 1 },
+    { q: 0, r: 1 },
+  ];
 
   for (const tile of tiles) {
     tile.neighbors = [];
 
-    const hex = grid.getHex({ q: tile.q, r: tile.r });
-    if (!hex) continue;
-
-    for (const dir of directions) {
-      const neighbor = grid.neighborOf(hex, dir);
-      if (!neighbor) continue;
-
-      const neighborTile = tileMap.get(
-        `${neighbor.q},${neighbor.r}`
-      );
-
-      if (neighborTile) {
-        tile.neighbors.push(neighborTile.id);
+    for (const dir of AXIAL_DIRECTIONS) {
+      const neighborId = `${tile.q + dir.q},${tile.r + dir.r}`;
+      if (tileMap.has(neighborId)) {
+        tile.neighbors.push(neighborId);
       }
     }
   }

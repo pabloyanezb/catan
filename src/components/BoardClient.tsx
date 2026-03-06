@@ -9,7 +9,7 @@ import BoardView from "./BoardView";
 export default function BoardClient() {
 
 const [settings, setSettings] = useState<BoardSettings>({
-  adjacencyRule: "standard",
+  adjacencyRule: "strict",
   resourceBalance: "balanced",
 });
 
@@ -56,8 +56,8 @@ const [settings, setSettings] = useState<BoardSettings>({
               updateSetting("adjacencyRule", e.target.value as BoardSettings["adjacencyRule"])
             }
           >
-            <option value="standard">Standard</option>
-            <option value="extended">Extended</option>
+            <option value="strict">Strict</option>
+            <option value="relaxed">Relaxed</option>
           </select>
         </label>
 

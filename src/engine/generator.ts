@@ -75,12 +75,12 @@ export function generateBoard(
 
     });
 
-    computeNeighbors(tiles, grid);
+    computeNeighbors(tiles);
 
     valid =
       validateAdjacency(tiles, settings.adjacencyRule) &&
       (
-        settings.resourceBalance === "balanced" ||
+        settings.resourceBalance === "random" ||
         validateResourceBalance(tiles)
       );
   }

@@ -34,20 +34,18 @@ function isForbiddenPair(
   rule: AdjacencyRule
 ): boolean {
 
-  // Regla oficial obligatoria
-  if ((a === 6 && b === 8) || (a === 8 && b === 6)) {
+  // Relaxed: 6 y 8 no pueden estar juntos entre sí ni consigo mismos
+  if ((a === 6 || a === 8) && (b === 6 || b === 8)) {
     return true;
   }
 
-  if (rule === "extended") {
+  if (rule === "strict") {
     const extendedPairs = [
-      [5,9],[9,5],
-      [4,10],[10,4]
+      [5, 9], [9, 5],
+      [4, 10], [10, 4],
     ];
 
-    return extendedPairs.some(
-      ([x,y]) => x === a && y === b
-    );
+    return extendedPairs.some(([x, y]) => x === a && y === b);
   }
 
   return false;
@@ -69,7 +67,7 @@ export function validateResourceBalance(
       return neighbor?.resource === tile.resource;
     });
 
-    if (sameNeighbors.length >= 2) {
+    if (sameNeighbors.length >= 1) {
       return false;
     }
   }
