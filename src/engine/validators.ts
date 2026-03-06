@@ -52,7 +52,7 @@ function isForbiddenPair(
 }
 
 /**
- * Evita clusters de 3+ recursos iguales conectados.
+ * Evita clusters de 2+ recursos iguales conectados.
  */
 export function validateResourceBalance(
   tiles: Tile[]
@@ -67,7 +67,7 @@ export function validateResourceBalance(
       return neighbor?.resource === tile.resource;
     });
 
-    if (sameNeighbors.length >= 1) {
+    if (sameNeighbors.length >= 2) {
       return false;
     }
   }
