@@ -48,12 +48,11 @@ export function generateBoard(
 
   const grid = createHexagonGrid();
 
-  const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
-
   let tiles: Tile[] = [];
   let valid = false;
 
   while (!valid) {
+    const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
     const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
     let numberIndex = 0;
 

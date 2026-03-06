@@ -25,16 +25,13 @@ describe("generateBoard", () => {
     );
 
     for (const tile of sixEightTiles) {
-      const neighbors = board.tiles.filter(
-        (t) =>
-          Math.abs(t.q - tile.q) <= 1 &&
-          Math.abs(t.r - tile.r) <= 1 &&
-          !(t.q === tile.q && t.r === tile.r)
-      );
+      const neighbors = tile.neighbors
+        .map((id) => board.tiles.find((t) => t.id === id))
+        .filter(Boolean);
 
       for (const neighbor of neighbors) {
-        expect(neighbor.number).not.toBe(6);
-        expect(neighbor.number).not.toBe(8);
+        expect(neighbor!.number).not.toBe(6);
+        expect(neighbor!.number).not.toBe(8);
       }
     }
   });
