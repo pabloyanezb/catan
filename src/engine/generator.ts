@@ -98,11 +98,45 @@ export function generateBoard(rng: RNG): Board {
         r: hex.r,
         resource,
         number,
+        neighbors: [],
       };
     });
+
+    computeNeighbors(tiles, grid);
 
     valid = !hasInvalidSixEightAdjacency(tiles, grid);
   }
 
   return { tiles };
+}
+
+function computeNeighbors(
+  tiles: Tile[],
+  grid: Grid<GameHex>
+) {
+  const tileMap = new Map<string, Tile>(
+    tiles.map((t) => [`${t.q},${t.r}`, t])
+  );
+
+  const directions = [0, 1, 2, 3, 4, 5] as const;
+
+  for (const tile of tiles) {
+    tile.neighbors = [];
+
+    const hex = grid.getHex({ q: tile.q, r: tile.r });
+    if (!hex) continue;
+
+    for (const dir of directions) {
+      const neighbor = grid.neighborOf(hex, dir);
+      if (!neighbor) continue;
+
+      const neighborTile = tileMap.get(
+        `${neighbor.q},${neighbor.r}`
+      );
+
+      if (neighborTile) {
+        tile.neighbors.push(neighborTile.id);
+      }
+    }
+  }
 }
