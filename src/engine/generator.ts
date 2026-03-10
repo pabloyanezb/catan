@@ -1,5 +1,5 @@
 import { Board, BoardSettings, Tile } from "./types";
-import { validateNodeScore, validateResourceBalance, isValidNumberPlacement } from "./validators";
+import { validateResourceBalance, validateAdjacency, validateHighValueZones } from "./validators";
 import { RNG } from "./rng";
 import { computeNeighbors } from "./utils";
 import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "./constants";
@@ -10,46 +10,29 @@ const Hex = defineHex({ dimensions: 1 });
 
 function shuffle<T>(array: T[], rng: RNG): T[] {
   const copy = [...array];
-
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(rng.next() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-
   return copy;
 }
 
-function placeNumbers(
-  tiles: Tile[],
-  nonDesertIndices: number[],
-  available: number[],
-  position: number,
-  rule: BoardSettings["adjacencyRule"],
-  rng: RNG
-): boolean {
-  if (position === nonDesertIndices.length) return true;
+/**
+ * Cuenta vecinos compartidos entre todos los pares de tiles 6/8.
+ * Menor score = tiles de alta probabilidad más dispersos.
+ */
+function scoreHighValueZones(tiles: Tile[]): number {
+  const highTiles = tiles.filter(t => t.number === 6 || t.number === 8);
+  let shared = 0;
 
-  const tileIndex = nonDesertIndices[position];
-
-  for (const number of shuffle(available, rng)) {
-    if (!isValidNumberPlacement(tiles, tileIndex, number, rule)) continue;
-
-    tiles[tileIndex].number = number;
-
-    const placed = placeNumbers(
-      tiles,
-      nonDesertIndices,
-      available.filter(n => n !== number),
-      position + 1,
-      rule,
-      rng
-    );
-
-    if (placed) return true;
-    tiles[tileIndex].number = undefined;
+  for (let i = 0; i < highTiles.length; i++) {
+    for (let j = i + 1; j < highTiles.length; j++) {
+      const neighborsA = new Set(highTiles[i].neighbors);
+      shared += highTiles[j].neighbors.filter(id => neighborsA.has(id)).length;
+    }
   }
 
-  return false;
+  return shared;
 }
 
 export function generateBoard(
@@ -58,38 +41,35 @@ export function generateBoard(
 ): Board {
   const grid = new Grid(Hex, spiral({ radius: 2 }));
 
+  let best: Tile[] | null = null;
+  let candidates = 0;
+
   while (true) {
+    // Fase 1 — distribuir recursos y números aleatoriamente
     const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
+    const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
+    let numberIndex = 0;
 
     const tiles: Tile[] = grid.toArray().map((hex, i) => ({
       id: `${hex.q},${hex.r}`,
-      q: hex.q,
-      r: hex.r,
+      q: hex.q, r: hex.r,
       resource: resources[i],
-      number: undefined,
+      number: resources[i] !== "desert" ? numbers[numberIndex++] : undefined,
       neighbors: [],
     }));
 
     computeNeighbors(tiles);
 
+    // Fase 2 — validar reglas base
     if (settings.resourceBalance === "balanced" && !validateResourceBalance(tiles)) continue;
+    if (!validateAdjacency(tiles)) continue;
+    if (!validateHighValueZones(tiles)) continue;
 
-    const nonDesertIndices = tiles
-      .map((t, i) => t.resource !== "desert" ? i : -1)
-      .filter(i => i !== -1);
+    // Fase 3 — elegir el mejor de 5 candidatos válidos
+    if (!best || scoreHighValueZones(tiles) < scoreHighValueZones(best)) {
+      best = tiles.map(t => ({ ...t }));
+    }
 
-    const placed = placeNumbers(
-      tiles,
-      nonDesertIndices,
-      [...NUMBER_DISTRIBUTION],
-      0,
-      settings.adjacencyRule,
-      rng,
-    );
-    if (!placed) continue;
-
-    if (settings.adjacencyRule === "strict" && !validateNodeScore(tiles)) continue;
-
-    return { tiles };
+    if (++candidates >= 5) return { tiles: best };
   }
 }
