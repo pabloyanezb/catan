@@ -1,79 +1,75 @@
 import { Board, BoardSettings, Tile } from "./types";
-import { validateAdjacency, validateNodeScore, validateResourceBalance } from "./validators";
+import { validateResourceBalance, validateAdjacency, validateHighValueZones } from "./validators";
 import { RNG } from "./rng";
 import { computeNeighbors } from "./utils";
 import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "./constants";
 import { DEFAULT_SETTINGS } from "./settings";
+import { defineHex, Grid, spiral } from "honeycomb-grid";
 
-import { defineHex, Grid, spiral,} from "honeycomb-grid";
-
-/**
- * Definimos el tipo de hex
- */
 const Hex = defineHex({ dimensions: 1 });
-
-type GameHex = InstanceType<typeof Hex>;
 
 function shuffle<T>(array: T[], rng: RNG): T[] {
   const copy = [...array];
-
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(rng.next() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-
   return copy;
 }
 
 /**
- * Creamos un hexágono radio 2 (19 tiles)
+ * Cuenta vecinos compartidos entre todos los pares de tiles 6/8.
+ * Menor score = tiles de alta probabilidad más dispersos.
  */
-function createHexagonGrid(): Grid<GameHex> {
-  const hexes = spiral({ radius: 2 });
-  return new Grid(Hex, hexes);
+function scoreHighValueZones(tiles: Tile[]): number {
+  const highTiles = tiles.filter(t => t.number === 6 || t.number === 8);
+  let shared = 0;
+
+  for (let i = 0; i < highTiles.length; i++) {
+    for (let j = i + 1; j < highTiles.length; j++) {
+      const neighborsA = new Set(highTiles[i].neighbors);
+      shared += highTiles[j].neighbors.filter(id => neighborsA.has(id)).length;
+    }
+  }
+
+  return shared;
 }
 
 export function generateBoard(
   rng: RNG,
   settings: BoardSettings = DEFAULT_SETTINGS
 ): Board {
+  const grid = new Grid(Hex, spiral({ radius: 2 }));
 
-  const grid = createHexagonGrid();
+  let best: Tile[] | null = null;
+  let candidates = 0;
 
-  let tiles: Tile[] = [];
-  let valid = false;
-
-  while (!valid) {
+  while (true) {
+    // Fase 1 — distribuir recursos y números aleatoriamente
     const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
     const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
     let numberIndex = 0;
 
-    tiles = grid.toArray().map((hex, i) => {
-      const resource = resources[i];
-
-      let number: number | undefined;
-      if (resource !== "desert") {
-        number = numbers[numberIndex++];
-      }
-
-      return {
-        id: `${hex.q},${hex.r}`,
-        q: hex.q,
-        r: hex.r,
-        resource,
-        number,
-        neighbors: [],
-      };
-
-    });
+    const tiles: Tile[] = grid.toArray().map((hex, i) => ({
+      id: `${hex.q},${hex.r}`,
+      q: hex.q, r: hex.r,
+      resource: resources[i],
+      number: resources[i] !== "desert" ? numbers[numberIndex++] : undefined,
+      neighbors: [],
+    }));
 
     computeNeighbors(tiles);
 
-    valid =
-      validateAdjacency(tiles, settings.adjacencyRule) &&
-      (settings.adjacencyRule === 'relaxed' || validateNodeScore(tiles)) &&
-      (settings.resourceBalance === 'random' || validateResourceBalance(tiles));
-  }
+    // Fase 2 — validar reglas base
+    if (settings.resourceBalance === "balanced" && !validateResourceBalance(tiles)) continue;
+    if (!validateAdjacency(tiles)) continue;
+    if (!validateHighValueZones(tiles)) continue;
 
-  return { tiles };
+    // Fase 3 — elegir el mejor de 5 candidatos válidos
+    if (!best || scoreHighValueZones(tiles) < scoreHighValueZones(best)) {
+      best = tiles.map(t => ({ ...t }));
+    }
+
+    if (++candidates >= 5) return { tiles: best };
+  }
 }
