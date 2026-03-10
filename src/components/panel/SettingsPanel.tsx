@@ -27,10 +27,6 @@ export default function SettingsPanel({ settings, onChange, onGenerate }: Props)
     ? "flex flex-col gap-5 overflow-hidden transition-all duration-300 max-h-96 opacity-100"
     : "flex flex-col gap-5 overflow-hidden transition-all duration-300 max-h-0 opacity-0";
 
-  const chevronClass = showMobilePanel
-    ? "transition-transform duration-200 text-lg leading-none -rotate-90"
-    : "transition-transform duration-200 text-lg leading-none rotate-90";
-
   return (
     <aside className="w-full md:w-64 min-h-0 md:min-h-screen flex flex-row md:flex-col items-center md:items-stretch p-4 md:p-5 gap-4 md:gap-8 border-b md:border-b-0 md:border-r bg-catan-bg border-catan-border">
 
@@ -43,7 +39,29 @@ export default function SettingsPanel({ settings, onChange, onGenerate }: Props)
       {/* Board Settings — desktop only */}
       <div className="hidden md:flex flex-col gap-3 flex-1">
         <button onClick={() => setShowBoardSettings(prev => !prev)} className={toggleClass}>
-          {showBoardSettings ? "— Board Settings" : "+ Board Settings"}
+          <span className="flex items-center gap-2">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="shrink-0">
+              {/* Línea horizontal — siempre visible */}
+              <line
+                x1="0" y1="5" x2="10" y2="5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              {/* Línea vertical — desaparece cuando está abierto */}
+              <line
+                x1="5" y1="0" x2="5" y2="10"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                className={showBoardSettings
+                  ? "transition-all duration-300 opacity-0 rotate-90 origin-center"
+                  : "transition-all duration-300 opacity-100 rotate-0 origin-center"
+                }
+              />
+            </svg>
+            Board Settings
+          </span>
         </button>
 
         <div className={accordionClass}>
@@ -106,7 +124,24 @@ export default function SettingsPanel({ settings, onChange, onGenerate }: Props)
             onClick={() => setShowMobilePanel(prev => !prev)}
             className="px-3 flex items-center cursor-pointer border-l border-catan-umber-hover transition-colors bg-catan-umber hover:bg-catan-umber-hover text-catan-text"
           >
-            <span className={chevronClass}>›</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              className={showMobilePanel
+                ? "transition-transform duration-200 rotate-180"
+                : "transition-transform duration-200 rotate-0"
+              }
+            >
+              <path
+                d="M2 4L6 8L10 4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
 
         </div>
