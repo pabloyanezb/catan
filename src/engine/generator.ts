@@ -8,26 +8,57 @@ import { defineHex, Grid, spiral } from "honeycomb-grid";
 
 const Hex = defineHex({ dimensions: 1 });
 
-// Camino espiral del juego físico desde el exterior al centro
-const STANDARD_PATH = [
+// Camino espiral exterior del juego físico (12 tiles, counterclockwise)
+const STANDARD_PATH_EXTERIOR = [
   "0,-2", "1,-2", "2,-2", "2,-1", "2,0", "1,1",
   "0,2", "-1,2", "-2,2", "-2,1", "-2,0", "-1,-1",
-  "0,-1", "1,-1", "1,0", "0,1", "-1,1", "-1,0",
-  "0,0"
 ];
+
+// Camino espiral del anillo medio (6 tiles, counterclockwise)
+const STANDARD_PATH_MIDDLE = [
+  "0,-1", "1,-1", "1,0", "0,1", "-1,1", "-1,0",
+];
+
+// 6 esquinas válidas como puntos de inicio — cada 2 posiciones del exterior
+const CORNER_OFFSETS = [0, 2, 4, 6, 8, 10];
 
 // Secuencia oficial de números A-R del juego físico
 const STANDARD_SEQUENCE = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
 
 /**
+ * Construye el camino espiral completo rotando exterior y anillo medio
+ * desde una esquina aleatoria. El centro siempre es el último tile.
+ * El offset del anillo medio es cornerIndex (exteriorOffset / 2)
+ * para mantener la continuidad del camino físico.
+ */
+function buildStandardPath(rng: RNG): string[] {
+  const cornerIndex = Math.floor(rng.next() * CORNER_OFFSETS.length);
+  const exteriorOffset = CORNER_OFFSETS[cornerIndex];
+  const middleOffset = cornerIndex;
+
+  const rotatedExterior = [
+    ...STANDARD_PATH_EXTERIOR.slice(exteriorOffset),
+    ...STANDARD_PATH_EXTERIOR.slice(0, exteriorOffset),
+  ];
+
+  const rotatedMiddle = [
+    ...STANDARD_PATH_MIDDLE.slice(middleOffset),
+    ...STANDARD_PATH_MIDDLE.slice(0, middleOffset),
+  ];
+
+  return [...rotatedExterior, ...rotatedMiddle, "0,0"];
+}
+
+/**
  * Asigna la secuencia oficial de números siguiendo el camino espiral.
  * Salta los tiles desierto — el siguiente número se asigna al siguiente tile no-desierto.
  */
-function placeNumbersStandard(tiles: Tile[]): void {
+function placeNumbersStandard(tiles: Tile[], rng: RNG): void {
   const tileMap = buildTileMap(tiles);
+  const path = buildStandardPath(rng);
   let sequenceIndex = 0;
 
-  for (const id of STANDARD_PATH) {
+  for (const id of path) {
     const tile = tileMap.get(id);
     if (!tile || tile.resource === "desert") continue;
     tile.number = STANDARD_SEQUENCE[sequenceIndex++];
@@ -87,9 +118,9 @@ export function generateBoard(
     // Fase 2 — Validar balance de recursos antes de intentar colocar números
     if (settings.resourceBalance === "balanced" && !validateResourceBalance(tiles)) continue;
 
-    // Fase 3 — Modo standard: secuencia oficial, solo recursos aleatorios
+    // Fase 3 — Modo standard: secuencia oficial con inicio aleatorio
     if (settings.numberPlacement === "standard") {
-      placeNumbersStandard(tiles);
+      placeNumbersStandard(tiles, rng);
       return { tiles };
     }
 
