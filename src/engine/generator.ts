@@ -1,18 +1,12 @@
 import { Board, BoardSettings, Tile } from "./types";
-import { validateAdjacency, validateNodeScore, validateResourceBalance } from "./validators";
+import { validateNodeScore, validateResourceBalance, isValidNumberPlacement } from "./validators";
 import { RNG } from "./rng";
 import { computeNeighbors } from "./utils";
 import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "./constants";
 import { DEFAULT_SETTINGS } from "./settings";
+import { defineHex, Grid, spiral } from "honeycomb-grid";
 
-import { defineHex, Grid, spiral,} from "honeycomb-grid";
-
-/**
- * Definimos el tipo de hex
- */
 const Hex = defineHex({ dimensions: 1 });
-
-type GameHex = InstanceType<typeof Hex>;
 
 function shuffle<T>(array: T[], rng: RNG): T[] {
   const copy = [...array];
@@ -25,55 +19,77 @@ function shuffle<T>(array: T[], rng: RNG): T[] {
   return copy;
 }
 
-/**
- * Creamos un hexágono radio 2 (19 tiles)
- */
-function createHexagonGrid(): Grid<GameHex> {
-  const hexes = spiral({ radius: 2 });
-  return new Grid(Hex, hexes);
+function placeNumbers(
+  tiles: Tile[],
+  nonDesertIndices: number[],
+  available: number[],
+  position: number,
+  rule: BoardSettings["adjacencyRule"],
+  rng: RNG
+): boolean {
+  if (position === nonDesertIndices.length) return true;
+
+  const tileIndex = nonDesertIndices[position];
+
+  for (const number of shuffle(available, rng)) {
+    if (!isValidNumberPlacement(tiles, tileIndex, number, rule)) continue;
+
+    tiles[tileIndex].number = number;
+
+    const placed = placeNumbers(
+      tiles,
+      nonDesertIndices,
+      available.filter(n => n !== number),
+      position + 1,
+      rule,
+      rng
+    );
+
+    if (placed) return true;
+    tiles[tileIndex].number = undefined;
+  }
+
+  return false;
 }
 
 export function generateBoard(
   rng: RNG,
   settings: BoardSettings = DEFAULT_SETTINGS
 ): Board {
+  const grid = new Grid(Hex, spiral({ radius: 2 }));
 
-  const grid = createHexagonGrid();
-
-  let tiles: Tile[] = [];
-  let valid = false;
-
-  while (!valid) {
+  while (true) {
     const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
-    const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
-    let numberIndex = 0;
 
-    tiles = grid.toArray().map((hex, i) => {
-      const resource = resources[i];
-
-      let number: number | undefined;
-      if (resource !== "desert") {
-        number = numbers[numberIndex++];
-      }
-
-      return {
-        id: `${hex.q},${hex.r}`,
-        q: hex.q,
-        r: hex.r,
-        resource,
-        number,
-        neighbors: [],
-      };
-
-    });
+    const tiles: Tile[] = grid.toArray().map((hex, i) => ({
+      id: `${hex.q},${hex.r}`,
+      q: hex.q,
+      r: hex.r,
+      resource: resources[i],
+      number: undefined,
+      neighbors: [],
+    }));
 
     computeNeighbors(tiles);
 
-    valid =
-      validateAdjacency(tiles, settings.adjacencyRule) &&
-      (settings.adjacencyRule === 'relaxed' || validateNodeScore(tiles)) &&
-      (settings.resourceBalance === 'random' || validateResourceBalance(tiles));
-  }
+    if (settings.resourceBalance === "balanced" && !validateResourceBalance(tiles)) continue;
 
-  return { tiles };
+    const nonDesertIndices = tiles
+      .map((t, i) => t.resource !== "desert" ? i : -1)
+      .filter(i => i !== -1);
+
+    const placed = placeNumbers(
+      tiles,
+      nonDesertIndices,
+      [...NUMBER_DISTRIBUTION],
+      0,
+      settings.adjacencyRule,
+      rng,
+    );
+    if (!placed) continue;
+
+    if (settings.adjacencyRule === "strict" && !validateNodeScore(tiles)) continue;
+
+    return { tiles };
+  }
 }

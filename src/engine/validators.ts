@@ -121,3 +121,22 @@ export function validateResourceBalance(
 
   return true;
 }
+
+export function isValidNumberPlacement(
+  tiles: Tile[],
+  index: number,
+  number: number,
+  rule: AdjacencyRule
+): boolean {
+  const tile = tiles[index];
+  const tileMap = buildTileMap(tiles);
+
+  for (const neighborId of tile.neighbors) {
+    const neighbor = tileMap.get(neighborId);
+    if (!neighbor?.number) continue;
+
+    if (isForbiddenPair(number, neighbor.number, rule)) return false;
+  }
+
+  return true;
+}
