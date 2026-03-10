@@ -10,6 +10,36 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-catan-bg:      #1C1A17;
+  --color-catan-border:  #2E2B25;
+  --color-catan-surface: #2A2720;
+  --color-catan-muted:   #6B5E4A;
+  --color-catan-text:    #FFF8F0;
+
+  --color-catan-sand:        #E4CEA3;
+  --color-catan-sand-hover:  #D4BA8A;
+
+  --color-catan-wood:        #8DC68D;
+  --color-catan-wood-hover:  #7AB87A;
+
+  --color-catan-brick:       #D4845F;
+  --color-catan-brick-hover: #C0714E;
+
+  --color-catan-sheep:       #CEE8A0;
+  --color-catan-sheep-hover: #BAD88A;
+
+  --color-catan-wheat:       #F3D97F;
+  --color-catan-wheat-hover: #E5C96A;
+
+  --color-catan-ore:         #A9A9B8;
+  --color-catan-ore-hover:   #9696A8;
+
+  --color-catan-parchment:       #DDB87A;
+  --color-catan-parchment-hover: #C9A460;
+
+  --color-catan-umber:           #DC7362;
+  --color-catan-umber-hover:     #C85E4E;
 }
 
 @media (prefers-color-scheme: dark) {

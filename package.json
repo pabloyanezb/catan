@@ -11,6 +11,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "honeycomb-grid": "^4.1.5",
     "next": "16.1.6",
     "react": "19.2.3",
