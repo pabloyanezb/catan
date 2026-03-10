@@ -1,12 +1,38 @@
 import { Board, BoardSettings, Tile } from "./types";
 import { validateResourceBalance, validateAdjacency, validateHighValueZones } from "./validators";
 import { RNG } from "./rng";
-import { computeNeighbors } from "./utils";
+import { computeNeighbors, buildTileMap } from "./utils";
 import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "./constants";
 import { DEFAULT_SETTINGS } from "./settings";
 import { defineHex, Grid, spiral } from "honeycomb-grid";
 
 const Hex = defineHex({ dimensions: 1 });
+
+// Camino espiral del juego físico desde el exterior al centro
+const STANDARD_PATH = [
+  "0,-2", "1,-2", "2,-2", "2,-1", "2,0", "1,1",
+  "0,2", "-1,2", "-2,2", "-2,1", "-2,0", "-1,-1",
+  "0,-1", "1,-1", "1,0", "0,1", "-1,1", "-1,0",
+  "0,0"
+];
+
+// Secuencia oficial de números A-R del juego físico
+const STANDARD_SEQUENCE = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
+
+/**
+ * Asigna la secuencia oficial de números siguiendo el camino espiral.
+ * Salta los tiles desierto — el siguiente número se asigna al siguiente tile no-desierto.
+ */
+function placeNumbersStandard(tiles: Tile[]): void {
+  const tileMap = buildTileMap(tiles);
+  let sequenceIndex = 0;
+
+  for (const id of STANDARD_PATH) {
+    const tile = tileMap.get(id);
+    if (!tile || tile.resource === "desert") continue;
+    tile.number = STANDARD_SEQUENCE[sequenceIndex++];
+  }
+}
 
 function shuffle<T>(array: T[], rng: RNG): T[] {
   const copy = [...array];
@@ -45,31 +71,43 @@ export function generateBoard(
   let candidates = 0;
 
   while (true) {
-    // Fase 1 — distribuir recursos y números aleatoriamente
+    // Fase 1 — Distribuir recursos aleatoriamente
     const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
-    const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
-    let numberIndex = 0;
 
     const tiles: Tile[] = grid.toArray().map((hex, i) => ({
       id: `${hex.q},${hex.r}`,
       q: hex.q, r: hex.r,
       resource: resources[i],
-      number: resources[i] !== "desert" ? numbers[numberIndex++] : undefined,
+      number: undefined,
       neighbors: [],
     }));
 
     computeNeighbors(tiles);
 
-    // Fase 2 — validar reglas base
+    // Fase 2 — Validar balance de recursos antes de intentar colocar números
     if (settings.resourceBalance === "balanced" && !validateResourceBalance(tiles)) continue;
+
+    // Fase 3 — Modo standard: secuencia oficial, solo recursos aleatorios
+    if (settings.numberPlacement === "standard") {
+      placeNumbersStandard(tiles);
+      return { tiles };
+    }
+
+    // Fase 3 — Modo random: brute force con candidate scoring
+    const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
+    let numberIndex = 0;
+    tiles.forEach(t => {
+      if (t.resource !== "desert") t.number = numbers[numberIndex++];
+    });
+
     if (!validateAdjacency(tiles)) continue;
     if (!validateHighValueZones(tiles)) continue;
 
-    // Fase 3 — elegir el mejor de 5 candidatos válidos
+    // Fase 4 — Elegir el mejor de 5 candidatos válidos
     if (!best || scoreHighValueZones(tiles) < scoreHighValueZones(best)) {
       best = tiles.map(t => ({ ...t }));
     }
 
-    if (++candidates >= 5) return { tiles: best };
+    if (++candidates >= 5) return { tiles: best! };
   }
 }
