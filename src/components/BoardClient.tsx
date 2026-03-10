@@ -21,17 +21,18 @@ export default function BoardClient() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-end gap-4">
-        <SettingsPanel settings={settings} onChange={setSettings} />
-        <button
-          onClick={handleGenerate}
-          className="mb-6 px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Generate Board
-        </button>
-      </div>
-      {board && <BoardView board={board} />}
+    <div className="flex min-h-screen bg-catan-bg">
+      <SettingsPanel
+        settings={settings}
+        onChange={setSettings}
+        onGenerate={handleGenerate}
+      />
+      <main className="flex-1 flex items-center justify-center">
+        {board
+          ? <BoardView board={board} />
+          : <p className="text-xs uppercase tracking-widest text-catan-muted">No board generated</p>
+        }
+      </main>
     </div>
   );
 }
