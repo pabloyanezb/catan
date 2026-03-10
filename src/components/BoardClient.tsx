@@ -9,7 +9,7 @@ import BoardView from "./BoardView";
 export default function BoardClient() {
 
 const [settings, setSettings] = useState<BoardSettings>({
-  adjacencyRule: "strict",
+  numberPlacement: "standard",
   resourceBalance: "balanced",
 });
 
@@ -46,18 +46,18 @@ const [settings, setSettings] = useState<BoardSettings>({
         alignItems: "center"
       }}>
 
-        {/* ADJACENCY RULE */}
+        {/* NUMBER PLACEMENT */}
 
         <label>
-          Number adjacency
+          Number placement
           <select
-            value={settings.adjacencyRule}
+            value={settings.numberPlacement}
             onChange={(e) =>
-              updateSetting("adjacencyRule", e.target.value as BoardSettings["adjacencyRule"])
+              updateSetting("numberPlacement", e.target.value as BoardSettings["numberPlacement"])
             }
           >
-            <option value="strict">Strict</option>
-            <option value="relaxed">Relaxed</option>
+            <option value="standard">Standard</option>
+            <option value="random">Random</option>
           </select>
         </label>
 
