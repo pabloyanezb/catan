@@ -1,5 +1,5 @@
+import { Tile } from "../config/types";
 import { validateAdjacency, validateHighValueZones, validateResourceBalance } from "./validators";
-import { Tile } from "./types";
 
 function makeTile(id: string, overrides: Partial<Tile> = {}): Tile {
   return {

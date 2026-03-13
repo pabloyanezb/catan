@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-import { BoardSettings } from "@/engine/types";
+import { BoardSettings } from "@/engine/config/types";
 import SettingsFields from "./SettingsFields";
 
 interface Props {

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { generateBoard } from "@/engine/generator";
-import { MathRandomRNG } from "@/engine/rng";
-import { BoardSettings } from "@/engine/types";
+import { generateBoard } from "@/engine/logic/generator";
+import { MathRandomRNG } from "@/engine/utils/rng";
+import { BoardSettings } from "@/engine/config/types";
 import BoardView from "./board/BoardView";
 import SettingsPanel from "./panel/SettingsPanel";
 

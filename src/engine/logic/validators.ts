@@ -1,5 +1,5 @@
-import { Tile } from "./types";
-import { buildTileMap } from "./utils";
+import { Tile } from "../config/types";
+import { buildTileMap } from "../utils/utils";
 
 /**
  * Verifica que ningún tile tenga números idénticos o combinaciones

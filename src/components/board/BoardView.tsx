@@ -1,4 +1,4 @@
-import { Board } from "@/engine/types";
+import { Board } from "@/engine/config/types";
 import HexTile from "./HexTile";
 
 type Props = {
