@@ -1,9 +1,9 @@
-import { Board, BoardSettings, Tile } from "./types";
+import { Board, BoardSettings, Tile } from "../config/types";
+import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "../config/constants";
+import { DEFAULT_SETTINGS } from "../config/settings";
+import { computeNeighbors, buildTileMap } from "../utils/utils";
+import { RNG } from "../utils/rng";
 import { validateResourceBalance, validateAdjacency, validateHighValueZones } from "./validators";
-import { RNG } from "./rng";
-import { computeNeighbors, buildTileMap } from "./utils";
-import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "./constants";
-import { DEFAULT_SETTINGS } from "./settings";
 import { defineHex, Grid, spiral } from "honeycomb-grid";
 
 const Hex = defineHex({ dimensions: 1 });

@@ -1,4 +1,4 @@
-import { Tile } from "./types";
+import { Tile } from "../config/types";
 
 /**
  * Construye un mapa rápido id -> tile

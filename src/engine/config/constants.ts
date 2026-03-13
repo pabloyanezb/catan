@@ -1,4 +1,4 @@
-import { Resource } from "./types";
+import { Resource } from "../config/types";
 
 export const RESOURCE_DISTRIBUTION: Resource[] = [
   "wood", "wood", "wood", "wood",

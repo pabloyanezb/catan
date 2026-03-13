@@ -1,5 +1,5 @@
 import { generateBoard } from "./generator";
-import { MathRandomRNG } from "./rng";
+import { MathRandomRNG } from "../utils/rng";
 
 describe("generateBoard", () => {
   it("should generate 19 tiles", () => {

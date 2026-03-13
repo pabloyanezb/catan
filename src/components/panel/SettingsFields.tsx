@@ -1,4 +1,4 @@
-import { BoardSettings, NumberPlacementMode, ResourceBalanceMode } from "@/engine/types";
+import { BoardSettings, NumberPlacementMode, ResourceBalanceMode } from "@/engine/config/types";
 import SegmentedControl from "./SegmentedControl";
 
 interface Props {

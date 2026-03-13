@@ -1,5 +1,5 @@
-import { Tile } from "@/engine/types";
-import { axialToPixel, getHexCorners } from "@/engine/geometry";
+import { Tile } from "@/engine/config/types";
+import { axialToPixel, getHexCorners } from "@/engine/utils/geometry";
 
 type Props = {
   tile: Tile;
