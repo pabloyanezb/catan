@@ -22,13 +22,15 @@ export interface Tile {
 }
 
 export interface PortSlot {
-  tiles: [string] | [string, string]; // 1 tile si esquina, 2 si borde compartido
+  tile: string;
+  direction: 0 | 1 | 2 | 3 | 4 | 5;
 }
  
 export interface Port {
   resource: PortResource;
   ratio: '2:1' | '3:1';
-  tiles: [string] | [string, string];
+  tile: string;
+  direction: 0 | 1 | 2 | 3 | 4 | 5;
 }
  
 export interface Board {
