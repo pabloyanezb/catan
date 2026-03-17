@@ -6,28 +6,40 @@ export type Resource =
   | 'ore'
   | 'desert';
 
+export type PortResource = Exclude<Resource, 'desert'> | 'generic';
+
+export type NumberPlacementMode = 'standard' | 'random';
+export type ResourceBalanceMode = 'balanced' | 'random';
+export type PortLayoutMode = 'fixed' | 'random';
+
 export interface Tile {
-  id: string;
+  id: string; // "q,r"
   q: number;
   r: number;
   resource: Resource;
   number?: number;
-  neighbors: string[];
+  neighbors: string[]; // ids of adjacent tiles
 }
 
+export interface PortSlot {
+  tile: string;
+  direction: 0 | 1 | 2 | 3 | 4 | 5;
+}
+ 
+export interface Port {
+  resource: PortResource;
+  ratio: '2:1' | '3:1';
+  tile: string;
+  direction: 0 | 1 | 2 | 3 | 4 | 5;
+}
+ 
 export interface Board {
   tiles: Tile[];
+  ports: Port[];
 }
-
-export type NumberPlacementMode = 
- | 'standard'
- | 'random';
-
-export type ResourceBalanceMode =
-  | 'random'
-  | 'balanced';
-
+ 
 export interface BoardSettings {
   numberPlacement: NumberPlacementMode;
   resourceBalance: ResourceBalanceMode;
+  portLayout: PortLayoutMode;
 }

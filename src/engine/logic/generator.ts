@@ -1,25 +1,27 @@
-import { Board, BoardSettings, Tile } from "../config/types";
-import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from "../config/constants";
-import { DEFAULT_SETTINGS } from "../config/settings";
-import { computeNeighbors, buildTileMap } from "../utils/utils";
-import { RNG } from "../utils/rng";
-import { validateResourceBalance, validateAdjacency, validateHighValueZones } from "./validators";
-import { defineHex, Grid, spiral } from "honeycomb-grid";
+import { Board, BoardSettings, Port, PortResource, PortSlot, Tile } from '../config/types';
+import { validateResourceBalance, validateAdjacency, validateHighValueZones } from './validators';
+import { RNG } from '../utils/rng';
+import { computeNeighbors, buildTileMap } from '../utils/utils';
+import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION, FRAME_PIECES, FRAME_SIDES } from '../config/constants';
+import { DEFAULT_SETTINGS } from '../config/settings';
+import { defineHex, Grid, spiral } from 'honeycomb-grid';
 
 const Hex = defineHex({ dimensions: 1 });
 
-// Camino espiral exterior del juego físico (12 tiles, counterclockwise)
+// ─── Spiral paths ─────────────────────────────────────────────────────────────
+
+// Camino espiral exterior (12 tiles, counterclockwise)
 const STANDARD_PATH_EXTERIOR = [
-  "0,-2", "-1,-1", "-2,0", "-2,1", "-2,2", "-1,2",
-  "0,2", "1,1", "2,0", "2,-1", "2,-2", "1,-2",
+  '0,-2', '1,-2', '2,-2', '2,-1', '2,0', '1,1',
+  '0,2', '-1,2', '-2,2', '-2,1', '-2,0', '-1,-1',
 ];
 
 // Camino espiral del anillo medio (6 tiles, counterclockwise)
 const STANDARD_PATH_MIDDLE = [
-  "0,-1", "-1,0", "-1,1", "0,1", "1,0", "1,-1",
+  '0,-1', '1,-1', '1,0', '0,1', '-1,1', '-1,0',
 ];
 
-// 6 esquinas válidas como puntos de inicio — cada 2 posiciones del exterior
+// Inicio en cada esquina (cada 2 posiciones del exterior)
 const CORNER_OFFSETS = [0, 2, 4, 6, 8, 10];
 
 // Secuencia oficial de números A-R del juego físico
@@ -27,9 +29,8 @@ const STANDARD_SEQUENCE = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3
 
 /**
  * Construye el camino espiral completo rotando exterior y anillo medio
- * desde una esquina aleatoria. El centro siempre es el último tile.
- * El offset del anillo medio es cornerIndex (exteriorOffset / 2)
- * para mantener la continuidad del camino físico.
+ * desde una esquina aleatoria. middleOffset = cornerIndex (exteriorOffset / 2)
+ * para mantener continuidad del camino físico.
  */
 function buildStandardPath(rng: RNG): string[] {
   const cornerIndex = Math.floor(rng.next() * CORNER_OFFSETS.length);
@@ -46,12 +47,12 @@ function buildStandardPath(rng: RNG): string[] {
     ...STANDARD_PATH_MIDDLE.slice(0, middleOffset),
   ];
 
-  return [...rotatedExterior, ...rotatedMiddle, "0,0"];
+  return [...rotatedExterior, ...rotatedMiddle, '0,0'];
 }
 
 /**
  * Asigna la secuencia oficial de números siguiendo el camino espiral.
- * Salta los tiles desierto — el siguiente número se asigna al siguiente tile no-desierto.
+ * Salta los tiles desierto.
  */
 function placeNumbersStandard(tiles: Tile[], rng: RNG): void {
   const tileMap = buildTileMap(tiles);
@@ -60,10 +61,12 @@ function placeNumbersStandard(tiles: Tile[], rng: RNG): void {
 
   for (const id of path) {
     const tile = tileMap.get(id);
-    if (!tile || tile.resource === "desert") continue;
+    if (!tile || tile.resource === 'desert') continue;
     tile.number = STANDARD_SEQUENCE[sequenceIndex++];
   }
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function shuffle<T>(array: T[], rng: RNG): T[] {
   const copy = [...array];
@@ -92,6 +95,61 @@ function scoreHighValueZones(tiles: Tile[]): number {
   return shared;
 }
 
+// ─── Port generation ──────────────────────────────────────────────────────────
+
+function makePort(resource: PortResource, slot: PortSlot): Port {
+  return {
+    resource,
+    ratio: resource === 'generic' ? '3:1' : '2:1',
+    tile: slot.tile,
+    direction: slot.direction,
+  };
+}
+
+/**
+ * Fixed: las 6 piezas del frame mantienen su orden relativo.
+ * Solo el punto de inicio rota, en pasos de 2 para preservar la
+ * alternancia solo/doble entre piezas y lados.
+ *   step 0 → pieza 1 en lado 1
+ *   step 1 → pieza 3 en lado 1 (rota 2 posiciones)
+ *   step 2 → pieza 5 en lado 1 (rota 4 posiciones)
+ */
+function generatePortsFixed(rng: RNG): Port[] {
+  const step = Math.floor(rng.next() * 3); // 0, 1, 2
+  const rotation = step * 2;  // 0, 2, 4 — solo pasos pares
+
+  return FRAME_SIDES.flatMap((slots, i) => {
+    const piece = FRAME_PIECES[(i + rotation) % 6];
+    return slots.map((slot, j) => makePort(piece[j], slot));
+  });
+}
+
+/**
+ * Random: las piezas solo/doble se shufflean entre lados del mismo tipo.
+ * Una pieza doble nunca puede ir a un lado solo (y viceversa),
+ * porque el número de slots no coincidiría.
+ */
+function generatePortsRandom(rng: RNG): Port[] {
+  const soloPieces = shuffle(
+    FRAME_PIECES.filter(p => p.length === 1),
+    rng
+  );
+  const doublePieces = shuffle(
+    FRAME_PIECES.filter(p => p.length === 2),
+    rng
+  );
+
+  let si = 0;
+  let di = 0;
+
+  return FRAME_SIDES.flatMap((slots) => {
+    const piece = slots.length === 1 ? soloPieces[si++] : doublePieces[di++];
+    return slots.map((slot, j) => makePort(piece[j], slot));
+  });
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
 export function generateBoard(
   rng: RNG,
   settings: BoardSettings = DEFAULT_SETTINGS
@@ -115,20 +173,23 @@ export function generateBoard(
 
     computeNeighbors(tiles);
 
-    // Fase 2 — Validar balance de recursos antes de intentar colocar números
-    if (settings.resourceBalance === "balanced" && !validateResourceBalance(tiles)) continue;
+    // Fase 2 — Validar balance de recursos
+    if (settings.resourceBalance === 'balanced' && !validateResourceBalance(tiles)) continue;
 
-    // Fase 3 — Modo standard: secuencia oficial con inicio aleatorio
-    if (settings.numberPlacement === "standard") {
+    // Fase 3 — Colocar números
+    if (settings.numberPlacement === 'standard') {
       placeNumbersStandard(tiles, rng);
-      return { tiles };
+      const ports = settings.portLayout === 'fixed'
+        ? generatePortsFixed(rng)
+        : generatePortsRandom(rng);
+      return { tiles, ports };
     }
 
-    // Fase 3 — Modo random: brute force con candidate scoring
+    // Modo random: brute force con candidate scoring
     const numbers = shuffle(NUMBER_DISTRIBUTION, rng);
     let numberIndex = 0;
     tiles.forEach(t => {
-      if (t.resource !== "desert") t.number = numbers[numberIndex++];
+      if (t.resource !== 'desert') t.number = numbers[numberIndex++];
     });
 
     if (!validateAdjacency(tiles)) continue;
@@ -139,6 +200,11 @@ export function generateBoard(
       best = tiles.map(t => ({ ...t }));
     }
 
-    if (++candidates >= 5) return { tiles: best! };
+    if (++candidates >= 5) {
+      const ports = settings.portLayout === 'fixed'
+        ? generatePortsFixed(rng)
+        : generatePortsRandom(rng);
+      return { tiles: best!, ports };
+    }
   }
 }

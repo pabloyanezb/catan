@@ -1,6 +1,7 @@
-import { BoardSettings } from '../config/types';
+import { BoardSettings } from './types';
 
 export const DEFAULT_SETTINGS: BoardSettings = {
   numberPlacement: 'standard',
   resourceBalance: 'balanced',
+  portLayout: 'fixed',
 };
