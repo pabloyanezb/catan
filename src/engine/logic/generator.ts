@@ -107,44 +107,54 @@ function makePort(resource: PortResource, slot: PortSlot): Port {
 }
 
 /**
- * Fixed: las 6 piezas del frame mantienen su orden relativo.
- * Solo el punto de inicio rota, en pasos de 2 para preservar la
- * alternancia solo/doble entre piezas y lados.
- *   step 0 → pieza 1 en lado 1
- *   step 1 → pieza 3 en lado 1 (rota 2 posiciones)
- *   step 2 → pieza 5 en lado 1 (rota 4 posiciones)
+ * Rota un slot 60° anticlockwise n veces.
+ * Transformación axial: (q, r) → (-r, q + r)
+ * Dirección: +1 por cada paso (mod 6)
  */
-function generatePortsFixed(rng: RNG): Port[] {
-  const step = Math.floor(rng.next() * 3); // 0, 1, 2
-  const rotation = step * 2;  // 0, 2, 4 — solo pasos pares
+function rotateSlot(slot: PortSlot, steps: number): PortSlot {
+  let [q, r] = slot.tile.split(',').map(Number);
+  let dir = slot.direction;
 
-  return FRAME_SIDES.flatMap((slots, i) => {
-    const piece = FRAME_PIECES[(i + rotation) % 6];
-    return slots.map((slot, j) => makePort(piece[j], slot));
-  });
+  for (let i = 0; i < steps; i++) {
+    [q, r] = [-r, q + r];
+    dir = (dir + 1) % 6;
+  }
+
+  return { tile: `${q},${r}`, direction: dir };
 }
 
 /**
- * Random: las piezas solo/doble se shufflean entre lados del mismo tipo.
- * Una pieza doble nunca puede ir a un lado solo (y viceversa),
- * porque el número de slots no coincidiría.
+ * Fixed: todos los puertos rotan juntos (0, 2 o 4 pasos).
+ * Los recursos mantienen su orden relativo original.
+ */
+function generatePortsFixed(rng: RNG): Port[] {
+  const steps = Math.floor(rng.next() * 3) * 2; // 0, 2, 4
+
+  return FRAME_PIECES.flatMap((piece, i) =>
+    FRAME_SIDES[i].map((slot, j) =>
+      makePort(piece[j], rotateSlot(slot, steps))
+    )
+  );
+}
+
+/**
+ * Random: todos los puertos rotan juntos (0-5 pasos),
+ * pero los recursos se shufflean entre lados compatibles (solo↔solo, doble↔doble).
  */
 function generatePortsRandom(rng: RNG): Port[] {
-  const soloPieces = shuffle(
-    FRAME_PIECES.filter(p => p.length === 1),
-    rng
-  );
-  const doublePieces = shuffle(
-    FRAME_PIECES.filter(p => p.length === 2),
-    rng
-  );
+  const steps = Math.floor(rng.next() * 6); // 0-5
+
+  const soloPieces   = shuffle(FRAME_PIECES.filter(p => p.length === 1), rng);
+  const doublePieces = shuffle(FRAME_PIECES.filter(p => p.length === 2), rng);
 
   let si = 0;
   let di = 0;
 
-  return FRAME_SIDES.flatMap((slots) => {
-    const piece = slots.length === 1 ? soloPieces[si++] : doublePieces[di++];
-    return slots.map((slot, j) => makePort(piece[j], slot));
+  return FRAME_PIECES.flatMap((original, i) => {
+    const piece = original.length === 1 ? soloPieces[si++] : doublePieces[di++];
+    return FRAME_SIDES[i].map((slot, j) =>
+      makePort(piece[j], rotateSlot(slot, steps))
+    );
   });
 }
 

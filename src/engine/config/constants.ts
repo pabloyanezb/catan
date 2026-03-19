@@ -14,51 +14,34 @@ export const NUMBER_DISTRIBUTION: number[] = [
 ];
 
 /**
- * Las 6 piezas físicas del frame (anticlockwise desde arriba).
- * El orden dentro de cada array corresponde al orden de los slots en FRAME_SIDES.
- * Las piezas alternan solo/doble — nunca se puede asignar una pieza doble
- * a un lado solo ni viceversa.
+ * Los recursos de cada pieza física del frame (anticlockwise desde arriba).
+ * Alternan solo/doble
  */
 export const FRAME_PIECES: PortResource[][] = [
-  ['wood'],                  // Pieza 1 — solo
-  ['brick', 'generic'],      // Pieza 2 — doble
-  ['generic'],               // Pieza 3 — solo
-  ['sheep', 'generic'],      // Pieza 4 — doble
-  ['ore'],                   // Pieza 5 — solo
-  ['wheat', 'generic'],      // Pieza 6 — doble
+  ['wood'],
+  ['brick', 'generic'],
+  ['generic'],
+  ['sheep', 'generic'],
+  ['ore'],
+  ['wheat', 'generic'],
 ];
 
 /**
- * Los 6 lados del hexágono grande (anticlockwise desde arriba).
- * Cada lado tiene 1 o 2 PortSlots que coinciden 1:1 con los ports de FRAME_PIECES.
+ * Las posiciones geométricas de cada lado (anticlockwise desde arriba).
+ * Cada slot define tile + direction — dónde se dibuja el puerto en el SVG.
+ * Alternan solo/doble en el mismo orden que FRAME_PIECES.
  */
 export const FRAME_SIDES: PortSlot[][] = [
-  // Lado 1 (top)
-  [
-    { tile: '1,-2',  direction: 4 }
-  ],
-  // Lado 2 (upper-left)
-  [
-    { tile: '-1,-1', direction: 4 },
-    { tile: '-2,0',  direction: 3 },
-  ],
-  // Lado 3 (lower-left)
-  [
-    { tile: '-2,1',  direction: 2 }
-  ],
-  // Lado 4 (bottom)
-  [
-    { tile: '-1,2',  direction: 2 },
-    { tile: '0,2',   direction: 1 },
-  ],
-  // Lado 5 (lower-right)
-  [
-    { tile: '1,1',   direction: 0 }
-  ],
-  // Lado 6 (upper-right)
-  [
-    { tile: '2,-1',  direction: 0 },
-    { tile: '2,-2',  direction: 5 },
-  ],
+  // Lado 1 (top) — solo
+  [{ tile: '1,-2',  direction: 4 }],
+  // Lado 2 (upper-left) — doble
+  [{ tile: '-1,-1', direction: 4 }, { tile: '-2,0', direction: 3 }],
+  // Lado 3 (lower-left) — solo
+  [{ tile: '-2,1',  direction: 2 }],
+  // Lado 4 (bottom) — doble
+  [{ tile: '-1,2',  direction: 2 }, { tile: '0,2',  direction: 1 }],
+  // Lado 5 (lower-right) — solo
+  [{ tile: '1,1',   direction: 0 }],
+  // Lado 6 (upper-right) — doble
+  [{ tile: '2,-1',  direction: 0 }, { tile: '2,-2', direction: 5 }],
 ];
-
