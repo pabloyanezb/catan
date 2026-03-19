@@ -1,22 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-
   --color-catan-bg:      #1C1A17;
   --color-catan-border:  #2E2B25;
   --color-catan-surface: #2A2720;
-  --color-catan-sea:  #6B9FB8;
+  --color-catan-sea:     #6B9FB8;
+  --color-catan-port:    #7A5C3E;
   --color-catan-muted:   #6B5E4A;
+
   --color-catan-text:    #FFF8F0;
+  --color-catan-text-dark: #1C1A17;
+  --color-catan-high-number: #8B1A1A;
 
   --color-catan-sand:        #E4CEA3;
   --color-catan-sand-hover:  #D4BA8A;
@@ -39,19 +33,52 @@
   --color-catan-parchment:       #DDB87A;
   --color-catan-parchment-hover: #C9A460;
 
-  --color-catan-umber:           #DC7362;
-  --color-catan-umber-hover:     #C85E4E;
+  --color-catan-umber:       #DC7362;
+  --color-catan-umber-hover: #C85E4E;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-catan-bg:      var(--color-catan-bg);
+  --color-catan-border:  var(--color-catan-border);
+  --color-catan-surface: var(--color-catan-surface);
+  --color-catan-sea:     var(--color-catan-sea);
+  --color-catan-port:    var(--color-catan-port);
+  --color-catan-muted:   var(--color-catan-muted);
+
+  --color-catan-text:    var(--color-catan-text);
+  --color-catan-text-dark: var(--color-catan-text-dark);
+  --color-catan-high-number: var(--color-catan-high-number);
+
+  --color-catan-sand:        var(--color-catan-sand);
+  --color-catan-sand-hover:  var(--color-catan-sand-hover);
+
+  --color-catan-wood:        var(--color-catan-wood);
+  --color-catan-wood-hover:  var(--color-catan-wood-hover);
+
+  --color-catan-brick:       var(--color-catan-brick);
+  --color-catan-brick-hover: var(--color-catan-brick-hover);
+
+  --color-catan-sheep:       var(--color-catan-sheep);
+  --color-catan-sheep-hover: var(--color-catan-sheep-hover);
+
+  --color-catan-wheat:       var(--color-catan-wheat);
+  --color-catan-wheat-hover: var(--color-catan-wheat-hover);
+
+  --color-catan-ore:         var(--color-catan-ore);
+  --color-catan-ore-hover:   var(--color-catan-ore-hover);
+
+  --color-catan-parchment:       var(--color-catan-parchment);
+  --color-catan-parchment-hover: var(--color-catan-parchment-hover);
+
+  --color-catan-umber:       var(--color-catan-umber);
+  --color-catan-umber-hover: var(--color-catan-umber-hover);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-catan-bg);
+  color: var(--color-catan-text);
   font-family: Arial, Helvetica, sans-serif;
 }

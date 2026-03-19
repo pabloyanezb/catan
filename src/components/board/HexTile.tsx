@@ -5,44 +5,37 @@ type Props = {
   tile: Tile;
 };
 
-const resourceColors: Record<string, string> = {
-  wood: "#8DC68D",
-  brick: "#E1957C",
-  sheep: "#CEE8A0",
-  wheat: "#F3D97F",
-  ore: "#A9A9B8",
-  desert: "#E4CEA3",
+const RESOURCE_COLORS: Record<string, string> = {
+  wood:    'var(--color-catan-wood)',
+  brick:   'var(--color-catan-brick)',
+  sheep:   'var(--color-catan-sheep)',
+  wheat:   'var(--color-catan-wheat)',
+  ore:     'var(--color-catan-ore)',
+  desert:  'var(--color-catan-sand)',
 };
 
-const probabilityByNumber: Record<number, number> = {
-  2: 1,
-  3: 2,
-  4: 3,
-  5: 4,
-  6: 5,
-  8: 5,
-  9: 4,
-  10: 3,
-  11: 2,
-  12: 1,
+// Número de combinaciones de dados que producen cada número
+const PIPS_BY_NUMBER: Record<number, number> = {
+  2: 1, 3: 2, 4: 3, 5: 4, 6: 5,
+  8: 5, 9: 4, 10: 3, 11: 2, 12: 1,
 };
 
 export default function HexTile({ tile }: Props) {
-  const center = axialToPixel(tile.q, tile.r);
+  const center  = axialToPixel(tile.q, tile.r);
   const corners = getHexCorners(center);
+  const points  = corners.map(p => `${p.x},${p.y}`).join(' ');
 
-  const numberProbability = tile.number ? probabilityByNumber[tile.number] : 0;
-  const numberFontSize = 18 + numberProbability * 2;
-  const numberColor = numberProbability >= 5 ? "#9F1D1D" : "#1F2937";
+  const pips      = tile.number ? PIPS_BY_NUMBER[tile.number] : 0;
+  const fontSize  = 18 + pips * 2;
 
-  const points = corners.map((p) => `${p.x},${p.y}`).join(" ");
+  const textColor = pips >= 5 ? 'var(--color-catan-high-number)' : 'var(--color-catan-text-dark)';
 
   return (
     <>
       <polygon
         points={points}
-        fill={resourceColors[tile.resource]}
-        stroke="#333"
+        fill={RESOURCE_COLORS[tile.resource]}
+        stroke="var(--color-catan-border)"
         strokeWidth={2}
       />
       {tile.number && (
@@ -51,9 +44,9 @@ export default function HexTile({ tile }: Props) {
           y={center.y}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={numberFontSize}
-          fontWeight='700'
-          fill={numberColor}
+          fontSize={fontSize}
+          fontWeight="700"
+          fill={textColor}
         >
           {tile.number}
         </text>
