@@ -1,9 +1,10 @@
-import { Board, BoardSettings, Port, PortResource, PortSlot, Tile } from '../config/types';
-import { validateResourceBalance, validateAdjacency, validateHighValueZones } from './validators';
-import { RNG } from '../utils/rng';
-import { computeNeighbors, buildTileMap } from '../utils/utils';
-import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION, FRAME_PIECES, FRAME_SIDES } from '../config/constants';
+import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from '../config/constants';
+import { Board, BoardSettings, Tile } from '../config/types';
 import { DEFAULT_SETTINGS } from '../config/settings';
+import { computeNeighbors, buildTileMap } from '../utils/utils';
+import { RNG } from '../utils/rng';
+import { validateResourceBalance, validateAdjacency, validateHighValueZones } from './validators';
+import { generatePortsFixed, generatePortsRandom } from './ports';
 import { defineHex, Grid, spiral } from 'honeycomb-grid';
 
 const Hex = defineHex({ dimensions: 1 });
@@ -93,69 +94,6 @@ function scoreHighValueZones(tiles: Tile[]): number {
   }
 
   return shared;
-}
-
-// ─── Port generation ──────────────────────────────────────────────────────────
-
-function makePort(resource: PortResource, slot: PortSlot): Port {
-  return {
-    resource,
-    ratio: resource === 'generic' ? '3:1' : '2:1',
-    tile: slot.tile,
-    direction: slot.direction,
-  };
-}
-
-/**
- * Rota un slot 60° anticlockwise n veces.
- * Transformación axial: (q, r) → (-r, q + r)
- * Dirección: +1 por cada paso (mod 6)
- */
-function rotateSlot(slot: PortSlot, steps: number): PortSlot {
-  let [q, r] = slot.tile.split(',').map(Number);
-  let dir = slot.direction;
-
-  for (let i = 0; i < steps; i++) {
-    [q, r] = [-r, q + r];
-    dir = (dir + 1) % 6;
-  }
-
-  return { tile: `${q},${r}`, direction: dir };
-}
-
-/**
- * Fixed: todos los puertos rotan juntos (0, 2 o 4 pasos).
- * Los recursos mantienen su orden relativo original.
- */
-function generatePortsFixed(rng: RNG): Port[] {
-  const steps = Math.floor(rng.next() * 3) * 2; // 0, 2, 4
-
-  return FRAME_PIECES.flatMap((piece, i) =>
-    FRAME_SIDES[i].map((slot, j) =>
-      makePort(piece[j], rotateSlot(slot, steps))
-    )
-  );
-}
-
-/**
- * Random: todos los puertos rotan juntos (0-5 pasos),
- * pero los recursos se shufflean entre lados compatibles (solo↔solo, doble↔doble).
- */
-function generatePortsRandom(rng: RNG): Port[] {
-  const steps = Math.floor(rng.next() * 6); // 0-5
-
-  const soloPieces   = shuffle(FRAME_PIECES.filter(p => p.length === 1), rng);
-  const doublePieces = shuffle(FRAME_PIECES.filter(p => p.length === 2), rng);
-
-  let si = 0;
-  let di = 0;
-
-  return FRAME_PIECES.flatMap((original, i) => {
-    const piece = original.length === 1 ? soloPieces[si++] : doublePieces[di++];
-    return FRAME_SIDES[i].map((slot, j) =>
-      makePort(piece[j], rotateSlot(slot, steps))
-    );
-  });
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
