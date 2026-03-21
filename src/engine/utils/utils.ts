@@ -1,4 +1,17 @@
 import { Tile } from "../config/types";
+import { RNG } from "./rng";
+
+/**
+ * Shufflea un array. No muta el array original.
+ */
+export function shuffle<T>(array: T[], rng: RNG): T[] {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(rng.next() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 /**
  * Construye un mapa rápido id -> tile
