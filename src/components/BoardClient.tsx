@@ -6,6 +6,7 @@ import { MathRandomRNG } from "@/engine/utils/rng";
 import { BoardSettings } from "@/engine/config/types";
 import BoardView from "./board/BoardView";
 import SettingsPanel from "./panel/SettingsPanel";
+import BoardCanvas from "./board/BoardCanvas";
 
 export default function BoardClient() {
   const [settings, setSettings] = useState<BoardSettings>({
@@ -30,7 +31,7 @@ export default function BoardClient() {
       />
       <main className="flex-1 flex md:items-center justify-center">
         {board
-          ? <BoardView board={board} />
+          ? <BoardCanvas board={board} />
           : <p className="text-xs uppercase tracking-widest text-catan-muted mt-8 md:mt-0">No board generated</p>
         }
       </main>
