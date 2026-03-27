@@ -1,10 +1,11 @@
 import { RESOURCE_DISTRIBUTION, NUMBER_DISTRIBUTION } from '../config/constants';
 import { Board, BoardSettings, Tile } from '../config/types';
 import { DEFAULT_SETTINGS } from '../config/settings';
-import { computeNeighbors, buildTileMap } from '../utils/utils';
+import { computeNeighbors, buildTileMap, shuffle } from '../utils/utils';
 import { RNG } from '../utils/rng';
 import { validateResourceBalance, validateAdjacency, validateHighValueZones } from './validators';
 import { generatePortsFixed, generatePortsRandom } from './ports';
+import { generateSeaTiles } from './seaTiles';
 import { defineHex, Grid, spiral } from 'honeycomb-grid';
 
 const Hex = defineHex({ dimensions: 1 });
@@ -67,17 +68,6 @@ function placeNumbersStandard(tiles: Tile[], rng: RNG): void {
   }
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function shuffle<T>(array: T[], rng: RNG): T[] {
-  const copy = [...array];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(rng.next() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
 /**
  * Cuenta vecinos compartidos entre todos los pares de tiles 6/8.
  * Menor score = tiles de alta probabilidad más dispersos.
@@ -130,7 +120,8 @@ export function generateBoard(
       const ports = settings.portLayout === 'fixed'
         ? generatePortsFixed(rng)
         : generatePortsRandom(rng);
-      return { tiles, ports };
+      const seaTiles = generateSeaTiles(rng);
+      return { tiles, ports, seaTiles };
     }
 
     // Modo random: brute force con candidate scoring
@@ -152,7 +143,8 @@ export function generateBoard(
       const ports = settings.portLayout === 'fixed'
         ? generatePortsFixed(rng)
         : generatePortsRandom(rng);
-      return { tiles: best!, ports };
+      const seaTiles = generateSeaTiles(rng);
+      return { tiles: best!, ports, seaTiles };
     }
   }
 }

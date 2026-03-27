@@ -32,8 +32,14 @@ export interface Port {
   tile: string;
   direction: 0 | 1 | 2 | 3 | 4 | 5;
 }
+
+export interface SeaTile {
+  q: number;
+  r: number;
+}
  
 export interface Board {
+  seaTiles: SeaTile[];
   tiles: Tile[];
   ports: Port[];
 }
