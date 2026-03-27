@@ -18,7 +18,7 @@ export default function SegmentedControl<T extends string>({
           key={option}
           onClick={() => onChange(option)}
           className={`
-            flex-1 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer
+            flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer
             ${value === option
               ? "bg-catan-parchment text-catan-bg"
               : "bg-transparent text-catan-muted hover:text-catan-text"
