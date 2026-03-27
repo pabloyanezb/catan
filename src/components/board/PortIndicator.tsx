@@ -16,7 +16,7 @@ const PORT_COLORS: Record<string, string> = {
   sheep:   'var(--color-catan-sheep)',
   wheat:   'var(--color-catan-wheat)',
   ore:     'var(--color-catan-ore)',
-  generic: 'var(--color-catan-parchment)',
+  generic: 'var(--color-catan-port)',
 };
 
 export default function PortIndicator({ port }: { port: Port }) {
@@ -49,27 +49,32 @@ export default function PortIndicator({ port }: { port: Port }) {
         cx={v1.x}
         cy={v1.y}
         r={PORT_DOT_R}
+        fill="var(--color-catan-port)"
       />
       <circle
         cx={v2.x}
         cy={v2.y}
         r={PORT_DOT_R}
+        fill="var(--color-catan-port)"
       />
 
       {/* Label de ratio, rotado según el ángulo de la arista */}
       <g transform={`rotate(${edgeDeg}, ${lx}, ${ly})`}>
         <rect
-          x={lx - PORT_LABEL_W / 2} y={ly - PORT_LABEL_H / 2}
-          width={PORT_LABEL_W} height={PORT_LABEL_H}
+          x={lx - PORT_LABEL_W / 2}
+          y={ly - PORT_LABEL_H / 2}
+          width={PORT_LABEL_W}
+          height={PORT_LABEL_H}
           fill={PORT_COLORS[port.resource]}
-          stroke="var(--color-catan-bg)"
-          strokeWidth={1.4}
         />
         <text
-          x={lx} y={ly}
-          textAnchor="middle" dominantBaseline="middle"
-          fontSize={PORT_LABEL_FONT} fontWeight="700"
-          fill="var(--color-catan-bg)" fontFamily="sans-serif"
+          x={lx}
+          y={ly}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize={PORT_LABEL_FONT}
+          fontWeight="700"
+          fill={port.resource === 'generic' ? 'var(--color-catan-text)' : 'var(--color-catan-bg)'}
         >
           {port.resource === 'generic' ? '3:1' : '2:1'}
         </text>
