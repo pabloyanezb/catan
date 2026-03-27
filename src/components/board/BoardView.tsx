@@ -25,7 +25,7 @@ export default function BoardView({ board }: { board: Board }) {
       className="w-full max-w-2xl mx-auto overflow-visible"
       style={{ maxHeight: '85vh' }}
     >
-      <SeaBackground />
+      <SeaBackground tiles={board.seaTiles} />
       {board.tiles.map((tile) =>
         <HexTile
           key={tile.id}

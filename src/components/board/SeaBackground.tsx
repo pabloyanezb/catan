@@ -1,14 +1,32 @@
-import { axialToPixel } from '@/engine/utils/geometry';
 
-// Ligeramente más grande que el tablero para formar el marco del océano
-const SEA_RADIUS = 50 * 5.8;
+import { SeaTile } from '@/engine/config/types';
+import { axialToPixel, getHexCorners } from '@/engine/utils/geometry';
 
-// Hexágono renderizado detrás del tablero
-export default function SeaBackground() {
-  const { x, y } = axialToPixel(0, 0);
-  const points = Array.from({ length: 6 }, (_, i) => {
-    const a = (Math.PI / 180) * (60 * i);
-    return `${x + SEA_RADIUS * Math.cos(a)},${y + SEA_RADIUS * Math.sin(a)}`;
-  }).join(' ');
-  return <polygon points={points} fill="var(--color-catan-sea)" />;
+const HEX_SIZE = 50;
+
+// Hexágono de mar individual — mismo tamaño que los tiles del tablero
+function SeaHex({ q, r }: SeaTile) {
+  const center  = axialToPixel(q, r);
+  const corners = getHexCorners(center, HEX_SIZE);
+  const points  = corners.map(p => `${p.x},${p.y}`).join(' ');
+
+  return (
+    <polygon
+      points={points}
+      fill="var(--color-catan-sea)"
+    />
+  );
+}
+
+export default function SeaBackground({ tiles }: { tiles: SeaTile[] }) {
+  return (
+    <>
+      {tiles.map(t => (
+        <SeaHex
+          key={`${t.q},${t.r}`}
+          q={t.q}
+          r={t.r} />
+      ))}
+    </>
+  );
 }

@@ -29,7 +29,8 @@ export default function SettingsPanel({ settings, onChange, onGenerate }: Props)
         "items-center md:items-stretch",
         "p-4 md:p-5 gap-4 md:gap-8",
         "border-b md:border-b-0 md:border-r",
-        "bg-catan-bg border-catan-border"
+        "bg-catan-bg border-catan-border",
+        "z-10"
       )}
     >
 

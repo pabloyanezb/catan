@@ -35,8 +35,6 @@ export default function HexTile({ tile }: Props) {
       <polygon
         points={points}
         fill={RESOURCE_COLORS[tile.resource]}
-        stroke="var(--color-catan-border)"
-        strokeWidth={2}
       />
       {tile.number && (
         <text
