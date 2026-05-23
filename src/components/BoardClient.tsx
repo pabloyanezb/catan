@@ -4,16 +4,12 @@ import { useState } from "react";
 import { generateBoard } from "@/engine/logic/generator";
 import { MathRandomRNG } from "@/engine/utils/rng";
 import { BoardSettings } from "@/engine/config/types";
+import { DEFAULT_SETTINGS } from "@/engine/config/settings";
 import BoardView from "./board/BoardView";
 import SettingsPanel from "./panel/SettingsPanel";
 
 export default function BoardClient() {
-  const [settings, setSettings] = useState<BoardSettings>({
-    numberPlacement: "standard",
-    resourceBalance: "balanced",
-    desertPlacement: "center",
-    portLayout: "fixed",
-  });
+  const [settings, setSettings] = useState<BoardSettings>(DEFAULT_SETTINGS);
 
   const [board, setBoard] = useState<ReturnType<typeof generateBoard> | null>(null);
 
