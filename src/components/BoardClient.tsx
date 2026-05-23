@@ -11,7 +11,7 @@ export default function BoardClient() {
   const [settings, setSettings] = useState<BoardSettings>({
     numberPlacement: "standard",
     resourceBalance: "balanced",
-    desertPlacement: "random",
+    desertPlacement: "center",
     portLayout: "fixed",
   });
 
