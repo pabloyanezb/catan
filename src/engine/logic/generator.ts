@@ -14,13 +14,13 @@ const Hex = defineHex({ dimensions: 1 });
 
 // Camino espiral exterior (12 tiles, counterclockwise)
 const STANDARD_PATH_EXTERIOR = [
-  '0,-2', '1,-2', '2,-2', '2,-1', '2,0', '1,1',
-  '0,2', '-1,2', '-2,2', '-2,1', '-2,0', '-1,-1',
+  '0,-2', '-1,-1', '-2,0', '-2,1', '-2,2', '-1,2',
+  '0,2', '1,1', '2,0', '2,-1', '2,-2', '1,-2',
 ];
 
 // Camino espiral del anillo medio (6 tiles, counterclockwise)
 const STANDARD_PATH_MIDDLE = [
-  '0,-1', '1,-1', '1,0', '0,1', '-1,1', '-1,0',
+  '0,-1', '-1,0', '-1,1', '0,1', '1,0', '1,-1',
 ];
 
 // Inicio en cada esquina (cada 2 posiciones del exterior)
