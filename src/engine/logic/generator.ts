@@ -99,15 +99,38 @@ export function generateBoard(
 
   while (true) {
     // Fase 1 — Distribuir recursos aleatoriamente
-    const resources = shuffle(RESOURCE_DISTRIBUTION, rng);
+    const gridArray = grid.toArray();
 
-    const tiles: Tile[] = grid.toArray().map((hex, i) => ({
-      id: `${hex.q},${hex.r}`,
-      q: hex.q, r: hex.r,
-      resource: resources[i],
-      number: undefined,
-      neighbors: [],
-    }));
+    let desertId: string;
+    if (settings.desertPlacement === 'center') {
+      desertId = '0,0';
+    } else if (settings.desertPlacement === 'inner') {
+      const candidates = gridArray.filter(h =>
+        Math.max(Math.abs(h.q), Math.abs(h.r), Math.abs(h.q + h.r)) <= 1
+      );
+      const idx = Math.floor(rng.next() * candidates.length);
+      desertId = `${candidates[idx].q},${candidates[idx].r}`;
+    } else {
+      const idx = Math.floor(rng.next() * gridArray.length);
+      desertId = `${gridArray[idx].q},${gridArray[idx].r}`;
+    }
+
+    const nonDesertResources = shuffle(
+      RESOURCE_DISTRIBUTION.filter(r => r !== 'desert'),
+      rng
+    );
+    let resourceIndex = 0;
+
+    const tiles: Tile[] = gridArray.map(hex => {
+      const id = `${hex.q},${hex.r}`;
+      return {
+        id,
+        q: hex.q, r: hex.r,
+        resource: id === desertId ? 'desert' : nonDesertResources[resourceIndex++],
+        number: undefined,
+        neighbors: [],
+      };
+    });
 
     computeNeighbors(tiles);
 
