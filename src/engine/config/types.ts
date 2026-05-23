@@ -10,7 +10,7 @@ export type PortResource = Exclude<Resource, 'desert'> | 'generic';
 
 export type NumberPlacementMode = 'standard' | 'random';
 export type ResourceBalanceMode = 'balanced' | 'random';
-export type DesertPlacementMode = 'center' | 'centered' | 'random';
+export type DesertPlacementMode = 'center' | 'inner' | 'random';
 export type PortLayoutMode = 'fixed' | 'random';
 
 export interface Tile {

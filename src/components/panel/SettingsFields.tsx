@@ -53,10 +53,10 @@ export default function SettingsFields({ settings, onChange }: Props) {
           Desert
         </label>
         <SegmentedControl
-          options={['center', 'centered', 'random'] as DesertPlacementMode[]}
+          options={['center', 'inner', 'random'] as DesertPlacementMode[]}
           value={settings.desertPlacement}
           onChange={(v) => update('desertPlacement', v)}
-          labels={{ center: 'Center', centered: 'Central', random: 'Random' }}
+          labels={{ center: 'Center', inner: 'Inner', random: 'Random' }}
         />
       </div>
 

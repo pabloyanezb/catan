@@ -104,7 +104,7 @@ export function generateBoard(
     let desertId: string;
     if (settings.desertPlacement === 'center') {
       desertId = '0,0';
-    } else if (settings.desertPlacement === 'centered') {
+    } else if (settings.desertPlacement === 'inner') {
       const candidates = gridArray.filter(h =>
         Math.max(Math.abs(h.q), Math.abs(h.r), Math.abs(h.q + h.r)) <= 1
       );
