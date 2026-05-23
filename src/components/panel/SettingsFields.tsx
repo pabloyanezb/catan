@@ -1,6 +1,12 @@
 'use client';
 
-import { BoardSettings, NumberPlacementMode, PortLayoutMode, ResourceBalanceMode } from '@/engine/config/types';
+import {
+  BoardSettings,
+  DesertPlacementMode,
+  NumberPlacementMode,
+  PortLayoutMode,
+  ResourceBalanceMode,
+} from '@/engine/config/types';
 import SegmentedControl from './SegmentedControl';
 
 interface Props {
@@ -38,6 +44,19 @@ export default function SettingsFields({ settings, onChange }: Props) {
           value={settings.resourceBalance}
           onChange={(v) => update('resourceBalance', v)}
           labels={{ balanced: 'Balanced', random: 'Random' }}
+        />
+      </div>
+
+      {/* Desert placement */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs tracking-widest text-catan-muted uppercase">
+          Desert
+        </label>
+        <SegmentedControl
+          options={['center', 'centered', 'random'] as DesertPlacementMode[]}
+          value={settings.desertPlacement}
+          onChange={(v) => update('desertPlacement', v)}
+          labels={{ center: 'Center', centered: 'Central', random: 'Random' }}
         />
       </div>
 
